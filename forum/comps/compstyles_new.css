@@ -1,0 +1,82 @@
+﻿/*Styles for comp form*/
+h4 {margin:1%; margin-left: 10%;}
+label {font-weight: bold; }
+div {width: 80%; margin-left: auto; margin-right:auto}
+table {width: 80%;  margin-left: auto; margin-right:auto; background-color: #555555; border-style:solid; border-width: 1px; margin-top: 1%; background-color: #555555}
+.topLink {margin: 1%}
+.labelTd {text-align: right; font-weight: bold; color: #999999}
+.stylesList .titleTd{ text-align: left; font-weight: bold; }
+.stylesList .styleHeading{text-align: left; font-weight: bold; border-bottom-style: solid; border-bottom-width: 1px}
+.stylesList td {text-align: right}
+.userDetails { width:80%; border-style: solid; border-width: 1px; margin-left: auto; margin-right:auto; }
+.compDetails {width:80%; border-style: solid; border-width: 1px; margin-left: auto; margin-right:auto}
+#compCell{text-align: left}
+#userCell {text-align: right}
+.stylesList {text-align: center}
+hr {width : 70%}
+.centerIt {text-align: center; margin-left: auto; margin-right:auto}
+.smallLink{font-size: 75%}
+.titleTd{
+	text-align: left;
+	font-weight: bold;
+	font-size: medium;
+	color: #FFFFFF;
+}
+
+.entries td {text-align: center}
+.errorMessage{
+	border: 1px solid #999999;
+	text-align: center;
+	background-color: #FFA500;
+	color: white;
+	width: 40%;
+	padding: 5%;
+	margin-left: auto;
+	margin-right: auto;
+}
+#venueTd {vertical-align: middle;color: #999999}
+.summary{width:40%; }
+.summary td {text-align: center}
+
+a {text-decoration: none}
+a:link {text-decoration: none; color: Orange}
+a:visited {color: Orange}
+a:hover {color: Orange; text-decoration: underline}
+a:active {text-decoration: underline;}
+
+.errorMessage a {text-decoration: none}
+.errorMessage a:link {text-decoration: none; color: Blue}
+.errorMessage a:visited {color: Blue}
+.errorMessage a:hover {color: Blue; text-decoration: underline}
+.errorMessage a:active {text-decoration: underline;}
+
+#imageDiv{
+text-align: center;
+margin-top: 2%;
+margin-left: 30%;
+margin-right: 30%;
+width: 40%
+}
+#imageTable {
+border-style: solid;
+border-width : 1px;
+background-color: #333333
+}
+#imageTable td {
+padding-top: 4px;
+text-align: center;
+}
+#submit {
+margin-left: 20%;
+margin-right: 20%;
+text-align: center;
+margin-top: 1%;
+width: 60%
+}
+
+.catCell{
+background-color: #666666;
+color: white;
+font-weight: bold;
+text-align: left;
+}
