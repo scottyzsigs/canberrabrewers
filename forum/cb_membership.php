@@ -9,10 +9,10 @@ $user->session_begin();
 $auth->acl($user->data);
 $user->setup();
 
-page_header('Canberra Brewers Competitions');
+page_header('Canberra Brewers Membership');
 
 $template->set_filenames(array(
-    'body' => 'comps_body.html',
+    'body' => 'membership_body.html',
 ));
 
 make_jumpbox(append_sid("{$phpbb_root_path}viewforum.$phpEx"));

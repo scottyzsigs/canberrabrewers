@@ -1,6 +1,5 @@
-<? 
+<?php 
 // include for db connectivity
-// make a change for github
 require('/home/canber10/public_html/cbadmin/web_incs/web_db.inc');
 
 // first get sessId and userId from cookie or request
@@ -27,7 +26,6 @@ require('/home/canber10/public_html/cbadmin/web_incs/web_db.inc');
 	{
 		// get the details from the membership table by forum ID
 	}
-}
 ?>
 
 <div>
