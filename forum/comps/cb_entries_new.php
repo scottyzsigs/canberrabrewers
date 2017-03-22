@@ -21,27 +21,7 @@ jfh_error(true,"Unable to connect to the db!");
 	
 }
 //get sessId and userId from cookie or request
-$sessId='';
-if(!empty($_COOKIE["brewers_cookies_sid"]))
-{
-    $sessId = $_COOKIE["brewers_cookies_sid"];
-}
-elseif(!empty($_REQUEST["brewers_cookies_sid"]))
-{
-	$sessId = $_REQUEST["brewers_cookies_sid"];
-}
-if(!empty($_COOKIE["brewers_cookies_u"]))
-{	
-	$user_id = $_COOKIE["brewers_cookies_u"];
-}
-elseif(!empty($_REQUEST["brewers_cookies_u"]))
-{ 
-    $user_id = $_REQUEST["brewers_cookies_u"];
-}
-
-//Uncomment for blackout (UserID 127 = Jamie; 297 = Daff)
- //if($user_id NOT IN (127, 297))
- 	//{jfh_error(true, "There are no competitions open at the moment.");} 
+require('/home/canber10/public_html/cbadmin/web_incs/forum_auth.php');
 
 //If we have no user_id bad! if no sessId no big deal
 if($_SESSION['publicUser'] &&  $_SESSION['user_id'] == "-1")
