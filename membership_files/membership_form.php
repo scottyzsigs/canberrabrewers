@@ -12,7 +12,20 @@ $style = 'style="display:none;"';
 // get some details from membership, email is the key and links forum to membership
 if($user_id != '' && $user_id != '1')
 {
-	
+$user_sql=<<<ENDUSERSQL
+SELECT m.*
+FROM cb_membership m
+LEFT JOIN forumv3_users u
+ON m.member_email = u.user_email
+WHERE u.user_id = '%s'
+ENDUSERSQL;
+// put user id into string
+$user_sql=sprintf($user_sql,$user_id);
+// query db
+$user_result=$mysqli->query($user_sql);
+// fetch into array
+$user_details = $user_result->fetch_assoc();
+$firstname = $user_details['member_firstname'];
 }
 ?>
 
@@ -58,7 +71,7 @@ else
 
 	<div class="form-row">
 		<label for="first_name">Name</label> <span class="required">*</span>
-		<input type="text" id="first_name" name="first_name" required />
+		<input type="text" id="first_name" name="first_name" value='<?php echo $firstname ?>' required />
 	</div>
 	<div class="form-row">
 		<label for="last_name">Surname</label> <span class="required">*</span>
