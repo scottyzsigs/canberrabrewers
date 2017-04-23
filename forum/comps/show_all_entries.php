@@ -33,21 +33,21 @@ jfh_error(true,"Unable to connect to the db!");
 }
 //get sessId and userId from cookie or request
 $sessId='';
-if(!empty($_COOKIE["brewers_cookies_sid"]))
+if(!empty($_COOKIE["brewers_cookie_sid"]))
 {
-    $sessId = $_COOKIE["brewers_cookies_sid"];
+    $sessId = $_COOKIE["brewers_cookie_sid"];
 }
-elseif(!empty($_REQUEST["brewers_cookies_sid"]))
+elseif(!empty($_REQUEST["brewers_cookie_sid"]))
 {
-	$sessId = $_REQUEST["brewers_cookies_sid"];
+	$sessId = $_REQUEST["brewers_cookie_sid"];
 }
-if(!empty($_COOKIE["brewers_cookies_u"]))
+if(!empty($_COOKIE["brewers_cookie_u"]))
 {	
-	$user_id = $_COOKIE["brewers_cookies_u"];
+	$user_id = $_COOKIE["brewers_cookie_u"];
 }
-elseif(!empty($_REQUEST["brewers_cookies_u"]))
+elseif(!empty($_REQUEST["brewers_cookie_u"]))
 { 
-    $user_id = $_REQUEST["brewers_cookies_u"];
+    $user_id = $_REQUEST["brewers_cookie_u"];
 }
 
 //If we have no user_id bad! if no sessId no big deal
@@ -77,7 +77,7 @@ $compId=$comp_details['comp_id'];
 if($comp_result){$comp_result->free();}
 //#####remove after testing##############################################
 //(UserID 127 = Jamie; 297 = Daff; Mal = 387; Billy = 208; Lawfo = 410, Scotty = 401)
-$valid_users = array(446,401);
+$valid_users = array(401,529);
 
 if(!in_array($user_id,$valid_users))
 {
