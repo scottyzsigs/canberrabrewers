@@ -6,6 +6,22 @@ require('/home/canber10/public_html/cbadmin/web_incs/web_db.inc');
 
 require('/home/canber10/public_html/cbadmin/web_incs/forum_auth.php');
 
+// send to sandbox?
+$sandbox = 'true';
+// set up some PP variables for sandbox or not
+if($sandbox == 'true')
+{
+	$ppaction = 'https://www.sandbox.paypal.com/cgi-bin/webscr';
+	$ppbutton = 'EZ4CUYJTK7JYU';
+	$emailsubject = '*** TEST ONLY *** ';
+}	
+else
+{
+	$ppaction = 'https://www.paypal.com/cgi-bin/webscr';
+	$ppbutton = 'NAEQDZZQ3TR46';
+	$emailsubject = '';
+}
+
 // ***** STEP 0 *****
 // check if they are on the first step
 if ($_POST['step'] == '')
@@ -89,12 +105,12 @@ else
 	</div>
 	<div class="form-row">
 		<label for="last_name">Surname</label> <span class="required">*</span>
-		<input type="text" id="last_name" name="last_name" value="<?php echo $first_name ?>" required />
+		<input type="text" id="last_name" name="last_name" value="<?php echo $last_name ?>" required />
 	</div>
 	<div class="form-row">
 		<label for="forum_name">Forum name</label> <span class="required">*</span>
 		<div class="form-help">Enter your Forum Name - if you are new member, pick a name to use for the online forum. It can be your real name or a nickname</div>
-		<input type="text" id="forum_name" name="forum_name" required <?php echo $forumname_disabled ?> />
+		<input type="text" id="forum_name" name="forum_name" value="<?php echo $forum_name ?>" required <?php echo $forumname_disabled ?> />
 	</div>
 	<div class="form-row">
 		<label for="email">Email</label> <span class="required">*</span>
@@ -175,27 +191,42 @@ if ($_POST['step'] == '1')
 {
 // add to DB as unpaid
 $insert_sql=<<<ENDINSERTSQL
-INSERT INTO cb_membership (member_firstname, member_surname, member_email, member_mobile, member_address, member_suburb, member_state, member_postcode)
-VALUES (value1, value2, value3, ...);
-
+INSERT INTO cb_membership (member_firstname, member_surname, member_email, member_mobile, member_address, member_suburb, member_state, member_postcode, member_paid)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 ENDINSERTSQL;
-// put user id into string
-$insert_sql=sprintf($insert_sql,$user_id);
-// query db
-$insert_result=$mysqli->query($insert_sql);
+// prepare and exec
+$mysqli->prepare($insert_sql);
+
+$insert_sql->bind_param('ssssssssi',$_POST['first_name'],$_POST['last_name'],$_POST['email'],$_POST['night_phone_b'],$_POST['address1'],$_POST['city'],$_POST['state'],$_POST['zip'], 0);
+
+// execute sql
+// $insert_result=$mysqli->query($insert_sql);
+// $newID = $mysqli->insert_id;
+
+// mail the webmaster step 1 complete
+$msg = "A member has registered\n%s %s %s";
+$msg = sprintf($msg,$_POST['first_name']$_POST['last_name'],$_POST['email']);
+mail("webmaster@canberrabrewers.com.au",$emailsubject."Member registration step 1",$msg);
+
+echo $insert_sql; // debug
+
+// redirect to step 2
+// $url='/membership?step=2';
+// echo '<META HTTP-EQUIV=REFRESH CONTENT="1; '.$url.'">';
+// exit()
 }
 // ***** STEP 2 *****
 // check for step 2, which is a _GET from redirect after add to DB
 if ($_GET['step'] == '2')
 {
-	
+
 ?>
 <div>
 <h2>Step 2: Paypal Payment</h2>
 <p>Choose your membership type below and click Buy Now to continue to PayPal. You will be returned to our site for confirmation after you have paid.</p>
 </div>
 
-<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+<form action="<?php echo $ppaction ?>" method="post" target="_top">
 		<input type="hidden" id="first_name" name="first_name" />
 		<input type="hidden" id="last_name" name="last_name" />
 		<input type="hidden" id="email" name="email" />
@@ -211,7 +242,7 @@ if ($_GET['step'] == '2')
 </select>
 	</div>
 <input type="hidden" name="cmd" value="_s-xclick">
-<input type="hidden" name="hosted_button_id" value="NAEQDZZQ3TR46">
+<input type="hidden" name="hosted_button_id" value="<?php echo $ppbutton ?>">
 
 <input type="hidden" name="currency_code" value="AUD">
 <input type="image" src="https://www.paypalobjects.com/en_AU/i/btn/btn_buynowCC_LG.gif" border="0" name="submit" alt="PayPal – The safer, easier way to pay online!">
@@ -221,5 +252,21 @@ if ($_GET['step'] == '2')
 </form>
 <?php 
 // end step 2
+}
+// check if we came back from PP
+
+if ($_GET['frompp'] == '3')
+{
+// sql to update member as paid
+	
+// email to webmaster and treasurer
+
+?>
+<div>
+<h2>Thank you</h2>
+<p>Your membership has been processed, you should receive an email from PayPal for you transaction, another with membership details and a third email for forum activation. Please contact webmaster@canberrabrewers.com.au if you do not receive these emails.</p>
+</div>
+<?php 
+// end step 3
 }
 ?>
