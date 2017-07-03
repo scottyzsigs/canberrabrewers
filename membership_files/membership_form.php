@@ -6,7 +6,7 @@ require('/home/canber10/public_html/cbadmin/web_incs/web_db.inc');
 
 require('/home/canber10/public_html/cbadmin/web_incs/forum_auth.php');
 
-// send to sandbox?
+// send to sandbox and show debug?
 $sandbox = 'true';
 // set up some PP variables for sandbox or not
 if($sandbox == 'true')
@@ -14,6 +14,8 @@ if($sandbox == 'true')
 	$ppaction = 'https://www.sandbox.paypal.com/cgi-bin/webscr';
 	$ppbutton = 'EZ4CUYJTK7JYU';
 	$emailsubject = '*** TEST ONLY *** ';
+	error_reporting(E_ALL); 
+	ini_set('display_errors', 1);
 }	
 else
 {
@@ -21,10 +23,24 @@ else
 	$ppbutton = 'NAEQDZZQ3TR46';
 	$emailsubject = '';
 }
+// set up some global variables for each step
+if($user_id == '' && $user_id == '1')
+{
+	$existing_user = "New User";
+}
+else
+{
+	$existing_user = "Existing User";
+}
+$step0 = empty($_POST['step1']) ? true : false; // initial state
+$step1 = !empty($_POST['step1']) ? true : false; // member details form posted
+$step2 = false; // set after SQL insert
+$step3 = !empty($_GET['tx']) ? true : false; // back from paypal
+$step4 = !empty($_GET['step4']) ? true : false; // back from forum or set after sql update if already member
 
 // ***** STEP 0 *****
 // check if they are on the first step
-if ($_POST['step'] == '')
+if ($step0)
 {
 // set style for form
 $style = 'style="display:none;"';
@@ -34,7 +50,7 @@ if($user_id != '' && $user_id != '1')
 // set variable to disable forum name
 $forumname_disabled = 'disabled';
 $user_sql=<<<ENDUSERSQL
-SELECT m.*
+SELECT *
 FROM cb_membership m
 LEFT JOIN forumv3_users u
 ON m.member_email = u.user_email
@@ -98,7 +114,7 @@ else
 <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
 <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
 <form method="post" action novalidate="novalidate" target="_top" id="memberform">
-	<input type="hidden" name="step" value="1" />
+	<input type="hidden" name="step1" value="1" />
 	<div class="form-row">
 		<label for="first_name">Name</label> <span class="required">*</span>
 		<input type="text" id="first_name" name="first_name" value="<?php echo $first_name ?>" required />
@@ -118,7 +134,7 @@ else
 	</div>
 	<div class="form-row">
 		<label for="mobile">Mobile number</label>
-		<input type="text" id="night_phone_b" name="night_phone_b" value="<?php echo $member_mobile ?>" required />
+		<input type="text" id="night_phone_b" name="night_phone_b" value="<?php echo $mobile_number ?>" required />
 	</div>
 	<div class="form-row">
 		<label for="address1">Address</label> <span class="required">*</span>
@@ -187,37 +203,48 @@ jQuery(document).ready(function ($) {
 
 // ***** STEP 1 *****
 // check if they submitted the form step = 1
-if ($_POST['step'] == '1')
+if ($step1)
 {
 // add to DB as unpaid
+if($user_id == '' || $user_id == '1')
+{
 $insert_sql=<<<ENDINSERTSQL
 INSERT INTO cb_membership (member_firstname, member_surname, member_email, member_mobile, member_address, member_suburb, member_state, member_postcode, member_paid)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 ENDINSERTSQL;
-// prepare and exec
-$mysqli->prepare($insert_sql);
 
-$insert_sql->bind_param('ssssssssi',$_POST['first_name'],$_POST['last_name'],$_POST['email'],$_POST['night_phone_b'],$_POST['address1'],$_POST['city'],$_POST['state'],$_POST['zip'], 0);
+// prepare and exec
+if ($insStmt = $mysqli->prepare($insert_sql)) 
+{
+// set var for paid
+$a = 0;
+$insStmt->bind_param('ssssssssi',$_POST['first_name'],$_POST['last_name'],$_POST['email'],$_POST['night_phone_b'],$_POST['address1'],$_POST['city'],$_POST['state'],$_POST['zip'], $a);
 
 // execute sql
-// $insert_result=$mysqli->query($insert_sql);
-// $newID = $mysqli->insert_id;
+$insStmt->execute();
+// get the ID
+$newID = $insStmt->insert_id;
+// close
+if($insStmt){$insStmt->close();}
+
+// echo $newID; // debug
+// put the new ID on the session
+$_SESSION['member_ID'] = $newID;
+}
+}
+
 
 // mail the webmaster step 1 complete
-$msg = "A member has registered\n%s %s %s";
-$msg = sprintf($msg,$_POST['first_name']$_POST['last_name'],$_POST['email']);
-mail("webmaster@canberrabrewers.com.au",$emailsubject."Member registration step 1",$msg);
+$msg = "Registration started\nName: %s %s \nEmail: %s\nType: %s";
+$msg = sprintf($msg,$_POST['first_name'],$_POST['last_name'],$_POST['email'],$existing_user);
+mail("webmaster@canberrabrewers.com.au",$emailsubject."Member registration started",$msg);
+// done all that go to step 2
+$step2 = true;
 
-echo $insert_sql; // debug
-
-// redirect to step 2
-// $url='/membership?step=2';
-// echo '<META HTTP-EQUIV=REFRESH CONTENT="1; '.$url.'">';
-// exit()
 }
 // ***** STEP 2 *****
 // check for step 2, which is a _GET from redirect after add to DB
-if ($_GET['step'] == '2')
+if ($step2)
 {
 
 ?>
@@ -255,18 +282,35 @@ if ($_GET['step'] == '2')
 }
 // check if we came back from PP
 
-if ($_GET['frompp'] == '3')
+if ($step3)
 {
-// sql to update member as paid
-	
-// email to webmaster and treasurer
+	// sql to update member as paid
 
+	// check user for forum
+	if($user_id == '' || $user_id == '1')
+	{
+		// not a user, add with redirect, come back with ?step4=1
+	}
+	else
+	{
+		$step4 = true;
+	}
+}
+// check for final step
+if($step4)
+{
+	// email to webmaster and treasurer
+	$msg = "Registration completed\nName: %s %s \nEmail: %s\nType: %s";
+	$msg = sprintf($msg,$_POST['first_name'],$_POST['last_name'],$_POST['email'],$existing_user);
+	mail("webmaster@canberrabrewers.com.au",$emailsubject."Member registration completed",$msg);
+	mail("treasurer@canberrabrewers.com.au",$emailsubject."Member registration completed",$msg);
+	
 ?>
 <div>
 <h2>Thank you</h2>
 <p>Your membership has been processed, you should receive an email from PayPal for you transaction, another with membership details and a third email for forum activation. Please contact webmaster@canberrabrewers.com.au if you do not receive these emails.</p>
 </div>
 <?php 
-// end step 3
+// end step 4
 }
 ?>
