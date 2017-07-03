@@ -1,5 +1,8 @@
 <?php
 
+// https://www.phpbb.com/community/viewtopic.php?f=46&t=582367
+// https://wiki.phpbb.com/Function.user_add
+
 	global $db,$cache,$phpEx,$config,$phpbb_root_path;
 	
 	require_once ('community/config.php');
