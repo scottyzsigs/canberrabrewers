@@ -306,6 +306,7 @@ if($memberStmt){$memberStmt->close();}
 else
 { $error_state = true; }
 
+}
 if($error_state)
 {
 	echo $error_message;
@@ -321,8 +322,6 @@ else
 	$msg = sprintf($msg,$_POST['first_name'],$_POST['last_name'],$_POST['email'],$existing_user);
 	mail("webmaster@canberrabrewers.com.au",$emailsubject."Member registration started",$msg,$mail_headers);
 	// done all that go to step 2
-
-}
 
 }
 $step2 = true;
