@@ -6,9 +6,6 @@ require('/home/canber10/public_html/cbadmin/web_incs/web_db.inc');
 
 require('/home/canber10/public_html/cbadmin/web_incs/forum_auth.php');
 
-// import fields
-// member_firstname,member_surname,member_address,member_suburb,member_state,member_postcode,member_email,member_mobile,member_forum_name
-
 // send to sandbox and show debug?
 $sandbox = true;
 $debug_mode = false;
@@ -32,7 +29,7 @@ else
 	$emailsubject = '';
 }
 // set up some global variables for each step
-if($user_id == '' || $user_id == '1')
+if($user_id == '' && $user_id == '1')
 {
 	$existing_user = "New User";
 }
@@ -73,11 +70,12 @@ if($user_id != '' && $user_id != '1')
 {
 // set variable to disable forum name
 $forumname_disabled = 'readonly';
+$email_readonly = 'readonly';
 $user_sql=<<<ENDUSERSQL
 SELECT *
 FROM cb_membership m
 LEFT JOIN forumv3_users u
-ON m.member_forum_name = u.username
+ON m.member_email = u.user_email
 WHERE u.user_id = '%s'
 ENDUSERSQL;
 // put user id into string
@@ -110,7 +108,7 @@ setcookie($cookie_name, $cookie_value, time() + (86400 * 1), "/"); // 86400 = 1 
 <li>This system is in beta, if you experience any issues registering or paying, please <strong>send an email to webmaster@canberrabrewers.com.au</strong>.</li>
 <li>If you are a returning member who is not current and can't access the forum, please <strong>register as a new member, specifying your old forum name</strong>.</li>
 <li>If you are a current member who has paid after April 2017 and don't yet have access the forum, please <strong>send an email to webmaster@canberrabrewers.com.au</strong> specifying your preferred forum name.</li>
-<li>You can change any of your existing details if they are incorrect <strong>except forum name</strong>. If you want to change that send an email to webmaster@canberrabrewers.com.au.</li>
+<li>You can change any of your existing details if they are incorrect <strong>except email and forum name</strong>. If you want to change either of these send an email to webmaster@canberrabrewers.com.au.</li>
 </ul>
 <h3>Step 1: Enter details</h3>
 <?php
@@ -173,7 +171,7 @@ else
 		</div>
 		<div class="form-row">
 			<div class="form-label"><label for="email">Email</label> <span class="required">*</span></div>
-			<input type="text" id="email" name="email" value="<?php echo $member_email ?>" required />
+			<input type="text" id="email" name="email" value="<?php echo $member_email ?>" required <?php echo $email_readonly ?> />
 		</div>
 		<div class="form-row">
 			<div class="form-label"><label for="mobile">Mobile number</label></div>
@@ -289,14 +287,14 @@ else
 {
 //update member details
 $member_sql=<<<ENDMEMBERSQL
-UPDATE cb_membership SET member_firstname=?, member_surname=?, member_mobile=?, member_address=?, member_suburb=?, member_state=?, member_postcode=?, member_paid=?, member_email=? WHERE member_id=?;
+UPDATE cb_membership SET member_firstname=?, member_surname=?, member_mobile=?, member_address=?, member_suburb=?, member_state=?, member_postcode=?, member_paid=? WHERE member_id=?;
 ENDMEMBERSQL;
 
 // prepare and exec
 if ($memberStmt = $mysqli->prepare($member_sql)) 
 {
 
-$memberStmt->bind_param('sssssssisi',$_POST['first_name'],$_POST['last_name'],$_POST['night_phone_b'],$_POST['address1'],$_POST['city'],$_POST['state'],$_POST['zip'],$a,$_POST['email'],$_POST['member_id']);
+$memberStmt->bind_param('sssssssii',$_POST['first_name'],$_POST['last_name'],$_POST['night_phone_b'],$_POST['address1'],$_POST['city'],$_POST['state'],$_POST['zip'], $a, $_POST['member_id']);
 
 // execute sql
 $memberStmt->execute();
