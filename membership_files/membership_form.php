@@ -10,7 +10,7 @@ require('/home/canber10/public_html/cbadmin/web_incs/forum_auth.php');
 // member_firstname,member_surname,member_address,member_suburb,member_state,member_postcode,member_email,member_mobile,member_forum_name
 
 // send to sandbox and show debug?
-$sandbox = true;
+$sandbox = false;
 $debug_mode = false;
 
 if($debug_mode)
