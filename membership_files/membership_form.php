@@ -126,21 +126,10 @@ if($user_id == '' || $user_id == '1')
 		</ul>
 	</div>
 <div id="forumpanel" <?php echo $style ?>>
-<form action="/forum/ucp.php?mode=login" novalidate="novalidate" method="post" id="forumform">
-	<input type="hidden" name="redirect" value="/?page_id=1059&preview=true" />
-    <h3>Forum login</h3>
-	<p>Please log into with your forum username and pasword to continue. After you log in you will be redirected back to this page.</p>
-	<fieldset>
-		<div class="form-row">
-			<br />
-			<label for="username">Username:</label> <span class="required">*</span>&nbsp;
-			<input type="text" name="username" id="username" size="10" title="Username" required />
-			<label for="password">Password:</label> <span class="required">*</span>&nbsp;
-			<input type="password" name="password" id="password" size="10" title="Password" required />
-		</div>
-		<input type="submit" name="login" value="Login" />
-	</fieldset>
-</form>
+<?php 
+$returnpage = '/membership';
+require('/home/canber10/public_html/cbadmin/web_incs/forum_login_form.php');
+?>
 </div>
 <?php
 }
