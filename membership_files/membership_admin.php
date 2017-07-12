@@ -25,6 +25,17 @@ if($admin != true)
 else
 {
 ?>
+<html>
+<head>
+<script type='text/javascript' src='http://www.canberrabrewers.com.au/wp-includes/js/jquery/jquery.js?ver=1.11.3'></script>
+<script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
+<script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
+<style type="text/css">
+body {font-family:arial;}
+
+</style>
+</head>
+<body>
 <h1>Canberra Brewers Member Admin</h1>
 <ul>
 <li><a href="/member_admin/?emailform">Send email to members</a></li>
@@ -32,35 +43,44 @@ else
 <?php
 	// set up variables
 	$action = !empty($_GET['action']) ? $_GET['action'] : ''; // was action sent?
-	$formaction = !empty($_POST['action']) ? $_POST['action'] : ''; // was form action sent?
-	$mail_headers = "From: webmaster@canberrabrewers.com.au\r\n";
+	$formaction = !empty($_POST['formaction']) ? $_POST['formaction'] : ''; // was form action sent?
 	
+	$sent_to = '';
 	// do the actions for forms
 	switch ($formaction) {
 		case 'sendemail':
 			$emailsubject = !empty($_POST['emailsubject']) ? $_POST['emailsubject'] : 'Message from Canberra Brewers';
 			$msg = !empty($_POST['emailmsg']) ? $_POST['emailmsg'] : '';
-			$format = !empty($_POST['emailformat']) ? $_POST['emailformat'];
-			if(msg == '')
+			$from = !empty($_POST['emailfrom']) ? $_POST['emailfrom'] : 'webmaster';
+			$to = !empty($_POST['emailto']) ? $_POST['emailfrom'] : '';
+			if(debug) {$to = 'webmaster@canberrabrewers.com.au';}
+			$mail_headers = "From: ". $from ."@canberrabrewers.com.au\r\n";
+			$mail_headers .= "MIME-Version: 1.0\r\n";
+			$mail_headers .= "Content-Type: text/html; charset=UTF-8\r\n";
+			if($msg == '')
 			{
 				echo "You can't send an empty message";
 			}
 			else
 			{
-				if($format == 'html')
+				$sent_to = 'Email sent to<br />';
+				if($to != '')
 				{
-					$mail_headers .= 'MIME-Version: 1.0' . "\ r\n";
-					$mail_headers .= ' Content-type: text/html; charset=iso-8859-1' . "\ r\n";
+					mail($to,$emailsubject,$msg,$mail_headers);
+					$sent_to .= $to;
 				}
-				// v1 limited to active members from the forum
-				$sql = 'SELECT user_email FROM forumv3_users WHERE user_type = 0 or user_type = 3';
-				//run the query
-				$user_result=$mysqli->query($sql);
-				while ($row = mysqli_fetch_array($user_result))
+				else
 				{
-					//echo $row['email'];
-					mail($row['email'],$emailsubject,$msg,$mail_headers);
-					$sent_to .= $row['email']."<br/>";
+					// v1 limited to active members from the forum
+					$sql = 'SELECT user_email FROM forumv3_users WHERE user_type = 0 or user_type = 3';
+					//run the query
+					$user_result=$mysqli->query($sql);
+					while ($row = mysqli_fetch_array($user_result))
+					{
+						//echo $row['email'];
+						mail($row['email'],$emailsubject,$msg,$mail_headers);
+						$sent_to .= $row['email'].'<br/>';
+					}
 				}
 			}
 			break;
@@ -68,15 +88,46 @@ else
 			echo "update the member";
 			break;
 }
+echo $sent_to;
+if(debug) { echo 'debug mode on';}
 ?>
-<script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
-<script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
+
 <script src="https://cdn.ckeditor.com/4.7.1/standard/ckeditor.js"></script>
-<textarea name="editor1"></textarea>
+<h2>Send email to members</h2>
+<form method="post" novalidate="novalidate" id="emailform">
+<input type="hidden" name="formaction" value="sendemail" />
+<div class="form-row">
+	<div class="form-label"><label for="emailsubject">Email subject</label> <span class="required">*</span></div>
+	<input type="text" id="emailsubject" name="emailsubject" required />
+</div>
+<div class="form-row">
+	<div class="form-label"><label for="emailfrom">Email from</label> <span class="required">*</span></div>
+	<input type="text" id="emailfrom" name="emailfrom" value="webmaster" required />@canberrabrewers.com.au
+</div>
+<div class="form-row">
+	<div class="form-label"><label for="emailto">Test email to</label></div>
+	<p>Leave this blank to email all members otherwise use a single email address to test</p>
+	<input type="text" id="emailto" name="emailto" />
+</div>
+<div class="form-row">
+<div class="form-label"><label for="emailmsg">Email body</label> <span class="required">*</span></div>
+<textarea name="emailmsg" required></textarea>
 <script>
-	CKEDITOR.replace( 'editor1' );
+	CKEDITOR.replace( 'emailmsg' );
+</script>
+</div>
+<input type="submit" value="Send email to members" />
+</form>
+<script>
+jQuery.noConflict();
+jQuery(document).ready(function ($) {
+	// validate the form
+	$("#emailform").validate();
+});
 </script>
 <?php
 // end admin check and page
 }
 ?>
+</body>
+</html>
