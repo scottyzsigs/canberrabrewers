@@ -39,7 +39,7 @@ else
 body, h1, h2, h3 {font-family:Arial, "Helvetica Neue", Helvetica, sans-serif; }
 p, td, div {font-family:Arial, "Helvetica Neue", Helvetica, sans-serif; font-size: 0.9em; }
 .form-row {margin-bottom: 15px;}
-.form-row label {margin-bottom:4px;}
+.form-label {padding-bottom:4px;}
 .form-row input[type="text"] {min-width:40%;margin-right:10px;}
 .form-help {font-size: 0.8em; color:gray;}
 .required, .error {color:red;}
@@ -60,11 +60,11 @@ p, td, div {font-family:Arial, "Helvetica Neue", Helvetica, sans-serif; font-siz
 	switch ($formaction) {
 		case 'sendemail':
 			$emailsubject = !empty($_POST['emailsubject']) ? $_POST['emailsubject'] : 'Message from Canberra Brewers';
-			$msg = '<style type="text/css">body, h1, h2, h3, p, td, div  {font-family:Arial, "Helvetica Neue", Helvetica, sans-serif; font-size: 0.9em;}</style>';
+			$msg = '<style type="text/css">body, h1, h2, h3  {font-family:Arial, "Helvetica Neue", Helvetica, sans-serif; } p, td, div {font-family:Arial, "Helvetica Neue", Helvetica, sans-serif; }</style>';
 			$msg .= !empty($_POST['emailmsg']) ? $_POST['emailmsg'] : '';
 			$from = !empty($_POST['emailfrom']) ? $_POST['emailfrom'] : 'webmaster';
 			$to = !empty($_POST['emailto']) ? $_POST['emailto'] : '';
-			$mail_headers = "From: ". $from ."@canberrabrewers.com.au\r\n";
+			$mail_headers = "From: Canberra Brewers <". $from ."@canberrabrewers.com.au>\r\n";
 			$mail_headers .= "MIME-Version: 1.0\r\n";
 			$mail_headers .= "Content-Type: text/html; charset=UTF-8\r\n";
 			if($msg == '')
@@ -105,7 +105,10 @@ p, td, div {font-family:Arial, "Helvetica Neue", Helvetica, sans-serif; font-siz
 			echo "update the member";
 			break;
 }
-echo $sent_to;
+if($sent_to != '')
+{
+echo '<p>'.$sent_to.'</p>';
+}
 if($debug) { echo 'debug mode on';}
 ?>
 
