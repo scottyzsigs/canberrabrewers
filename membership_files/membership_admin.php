@@ -6,17 +6,22 @@ require('/home/canber10/public_html/cbadmin/web_incs/web_db.inc');
 
 require('/home/canber10/public_html/cbadmin/web_incs/forum_auth.php');
 $admin = false;
-$debug = true;
+$debug = false;
 if($user_id == '' || $user_id == '1')
 {
-	$returnpage = '/membership_admin';
+	$returnpage = '/membership_files/membership_admin.php';
 	require('/home/canber10/public_html/cbadmin/web_incs/forum_login_form.php');
 }
 else
 {
 	// use the lookup table to see if this is an admin
-	// true for testing
-	$admin = true;
+	$usql = 'SELECT * FROM cb_admins WHERE forum_id = '.$user_id;
+	$u_result=$mysqli->query($usql);
+	while ($urow = mysqli_fetch_array($u_result))
+	{
+		$admin = true;
+	}
+	
 }
 if($admin != true)
 {
@@ -31,8 +36,12 @@ else
 <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
 <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
 <style type="text/css">
-body {font-family:arial;}
-
+body, h1, h2, h3 {font-family:Arial, "Helvetica Neue", Helvetica, sans-serif; }
+p, td, div {font-family:Arial, "Helvetica Neue", Helvetica, sans-serif; font-size: 0.9em; }
+.form-row {margin-bottom: 15px;}
+.form-row input[type="text"] {min-width:40%;margin-right:10px;}
+.form-help {font-size: 0.8em; color:gray;}
+.required, .error {color:red;}
 </style>
 </head>
 <body>
@@ -44,16 +53,16 @@ body {font-family:arial;}
 	// set up variables
 	$action = !empty($_GET['action']) ? $_GET['action'] : ''; // was action sent?
 	$formaction = !empty($_POST['formaction']) ? $_POST['formaction'] : ''; // was form action sent?
-	
+	$message = '';
 	$sent_to = '';
 	// do the actions for forms
 	switch ($formaction) {
 		case 'sendemail':
 			$emailsubject = !empty($_POST['emailsubject']) ? $_POST['emailsubject'] : 'Message from Canberra Brewers';
-			$msg = !empty($_POST['emailmsg']) ? $_POST['emailmsg'] : '';
+			$msg = '<style type="text/css">body, h1, h2, h3, p, td, div  {font-family:Arial, "Helvetica Neue", Helvetica, sans-serif; font-size: 0.9em;}</style>';
+			$msg .= !empty($_POST['emailmsg']) ? $_POST['emailmsg'] : '';
 			$from = !empty($_POST['emailfrom']) ? $_POST['emailfrom'] : 'webmaster';
-			$to = !empty($_POST['emailto']) ? $_POST['emailfrom'] : '';
-			if(debug) {$to = 'webmaster@canberrabrewers.com.au';}
+			$to = !empty($_POST['emailto']) ? $_POST['emailto'] : '';
 			$mail_headers = "From: ". $from ."@canberrabrewers.com.au\r\n";
 			$mail_headers .= "MIME-Version: 1.0\r\n";
 			$mail_headers .= "Content-Type: text/html; charset=UTF-8\r\n";
@@ -72,14 +81,21 @@ body {font-family:arial;}
 				else
 				{
 					// v1 limited to active members from the forum
-					$sql = 'SELECT user_email FROM forumv3_users WHERE user_type = 0 or user_type = 3';
+					$sql = '';
+					if($debug)
+					{
+						$sql = "SELECT user_email FROM forumv3_users WHERE username = 'ScottyT'";
+					}
+					else
+					{
+						$sql = 'SELECT user_email FROM forumv3_users WHERE user_type = 0 or user_type = 3';
+					}
 					//run the query
 					$user_result=$mysqli->query($sql);
 					while ($row = mysqli_fetch_array($user_result))
 					{
-						//echo $row['email'];
-						mail($row['email'],$emailsubject,$msg,$mail_headers);
-						$sent_to .= $row['email'].'<br/>';
+						mail($row['user_email'],$emailsubject,$msg,$mail_headers);
+						$sent_to .= $row['user_email'].'<br/>';
 					}
 				}
 			}
@@ -89,7 +105,7 @@ body {font-family:arial;}
 			break;
 }
 echo $sent_to;
-if(debug) { echo 'debug mode on';}
+if($debug) { echo 'debug mode on';}
 ?>
 
 <script src="https://cdn.ckeditor.com/4.7.1/standard/ckeditor.js"></script>
@@ -106,12 +122,12 @@ if(debug) { echo 'debug mode on';}
 </div>
 <div class="form-row">
 	<div class="form-label"><label for="emailto">Test email to</label></div>
-	<p>Leave this blank to email all members otherwise use a single email address to test</p>
 	<input type="text" id="emailto" name="emailto" />
+	<p class="form-help">Leave this blank to email all members otherwise use a single email address to test</p>
 </div>
 <div class="form-row">
 <div class="form-label"><label for="emailmsg">Email body</label> <span class="required">*</span></div>
-<textarea name="emailmsg" required></textarea>
+<textarea name="emailmsg" required><?php echo htmlentities($msg); ?></textarea>
 <script>
 	CKEDITOR.replace( 'emailmsg' );
 </script>
