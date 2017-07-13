@@ -39,6 +39,7 @@ else
 body, h1, h2, h3 {font-family:Arial, "Helvetica Neue", Helvetica, sans-serif; }
 p, td, div {font-family:Arial, "Helvetica Neue", Helvetica, sans-serif; font-size: 0.9em; }
 .form-row {margin-bottom: 15px;}
+.form-row label {margin-bottom:4px;}
 .form-row input[type="text"] {min-width:40%;margin-right:10px;}
 .form-help {font-size: 0.8em; color:gray;}
 .required, .error {color:red;}
