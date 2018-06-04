@@ -1,7 +1,7 @@
 <?php 
 // include for db connectivity
 require('/home/canber10/public_html/cbadmin/web_incs/web_db.inc');
-
+ 
 // use the forum auth cookies to see if user is logged on
 
 require('/home/canber10/public_html/cbadmin/web_incs/forum_auth.php');

@@ -9,6 +9,9 @@ require('/home/canber10/public_html/cbadmin/web_incs/forum_auth.php');
 // import fields
 // member_firstname,member_surname,member_address,member_suburb,member_state,member_postcode,member_email,member_mobile,member_forum_name
 
+// test
+//http://www.canberrabrewers.com.au/membership/?amt=40.00&cc=AUD&item_name=Canberra%20Brewers%20Membership&st=Completed&tx=89S50910A0734684E
+
 // send to sandbox and show debug?
 $sandbox = false;
 $debug_mode = false;
@@ -104,7 +107,7 @@ $cookie_value = $forum_name;
 setcookie($cookie_name, $cookie_value, time() + (86400 * 1), "/"); // 86400 = 1 day
 }
 ?>
-<p>Welcome to the Canberra Brewers Online Membership system Version 1.0 Beta.</p>
+<p>Welcome to the Canberra Brewers Online Membership system Version 1.1 Beta.</p>
 <h4>Please note:</h4>
 <ul>
 <li>This system is in beta, if you experience any issues registering or paying, please <strong>send an email to webmaster@canberrabrewers.com.au</strong>.</li>
@@ -362,15 +365,16 @@ if ($step3)
 {
 	// sql to update member as paid
 $member_sql=<<<ENDMEMBERSQL
-UPDATE cb_membership SET member_paid_date = ?, member_paid=?, member_transaction=? WHERE member_id=?;
+INSERT INTO cb_membership_transactions (transaction_date,transaction_code,member_id) VALUES(?,?,?);
 ENDMEMBERSQL;
+
 
 // prepare and exec
 if ($memberStmt = $mysqli->prepare($member_sql)) 
 {
 $a=1;
 $paiddate = date("Y-m-d");
-$memberStmt->bind_param('sisi', $paiddate, $a, $_GET['tx'], $_COOKIE['cb_member_id']);
+$memberStmt->bind_param('ssi', $paiddate, $_GET['tx'], $_COOKIE['cb_member_id']);
 
 // execute sql
 $memberStmt->execute();
