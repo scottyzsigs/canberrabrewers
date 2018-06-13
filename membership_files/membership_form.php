@@ -9,9 +9,6 @@ require('/home/canber10/public_html/cbadmin/web_incs/forum_auth.php');
 // import fields
 // member_firstname,member_surname,member_address,member_suburb,member_state,member_postcode,member_email,member_mobile,member_forum_name
 
-// test
-//http://www.canberrabrewers.com.au/membership/?amt=40.00&cc=AUD&item_name=Canberra%20Brewers%20Membership&st=Completed&tx=89S50910A0734684E
-
 // send to sandbox and show debug?
 $sandbox = false;
 $debug_mode = false;
@@ -111,8 +108,7 @@ setcookie($cookie_name, $cookie_value, time() + (86400 * 1), "/"); // 86400 = 1 
 <h4>Please note:</h4>
 <ul>
 <li>This system is in beta, if you experience any issues registering or paying, please <strong>send an email to webmaster@canberrabrewers.com.au</strong>.</li>
-<li>If you are a returning member who is not current and can't access the forum, please <strong>register as a new member, specifying your old forum name</strong>.</li>
-<li>If you are a current member who has paid after April 2017 and don't yet have access the forum, please <strong>send an email to webmaster@canberrabrewers.com.au</strong> specifying your preferred forum name.</li>
+<li>If you are a returning member who is not current and can't access the forum, please <strong>send an email to webmaster@canberrabrewers.com.au</strong> and we'll reactivate you temporarily so you can log in.</li>
 <li>You can change any of your existing details if they are incorrect <strong>except forum name</strong>. If you want to change that send an email to webmaster@canberrabrewers.com.au.</li>
 </ul>
 <h3>Step 1: Enter details</h3>
@@ -354,6 +350,7 @@ if ($step2)
 <input type="hidden" name="currency_code" value="AUD">
 <input type="image" src="https://www.paypalobjects.com/en_AU/i/btn/btn_buynowCC_LG.gif" border="0" name="submit" alt="PayPal – The safer, easier way to pay online!">
 <img alt="" border="0" src="https://www.paypalobjects.com/en_AU/i/scr/pixel.gif" width="1" height="1">
+<INPUT TYPE="hidden" name="address_override" value="1">
 <INPUT TYPE="hidden" name="country" value="AU" />
 </form>
 <?php 

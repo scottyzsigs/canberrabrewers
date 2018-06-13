@@ -7,8 +7,8 @@ require('/home/canber10/public_html/cbadmin/web_incs/web_db.inc');
 require('/home/canber10/public_html/cbadmin/web_incs/forum_auth.php');
 $admin = false;
 $admin_type = '';
-$debug_mode = false;
-
+$debug_mode = true;
+$thisyear = date("Y");
 if($debug_mode)
 {
 	error_reporting(E_ALL); 
@@ -60,12 +60,16 @@ tr:nth-child(odd) {background: #FFF}
 </style>
 </head>
 <body>
+
+
 <h1>Canberra Brewers Member Admin</h1>
 <ul>
 <li><a href="membership_admin.php?action=emailform">Send email to members</a></li>
 <?php
 if($admin_type == 'members') {
+	
 ?>
+<li><a href="membership_admin.php?action=emailform&emailaction=unpaidmembers">Send email to unpaid members for <?php echo $thisyear ?></a></li>
 <li><a href="membership_admin.php?action=memberlist">Manage Membership</a></li>
 <?php
 }
@@ -73,6 +77,8 @@ if($admin_type == 'members') {
 </ul>
 <?php
 	// set up variables
+	// user_type = 1 = inactive 0 = active; user_inactive_reason = 3, 0 = active
+	// admin user admin1 cbw3b!!
 	$action = !empty($_GET['action']) ? $_GET['action'] : ''; // was action sent?
 	$emailaction = !empty($_GET['emailaction']) ? $_GET['emailaction'] : ''; // was action sent?
 	$formaction = !empty($_POST['formaction']) ? $_POST['formaction'] : ''; // was form action sent?
@@ -105,20 +111,48 @@ if($admin_type == 'members') {
 				{
 					// v1 limited to active members from the forum
 					$sql = '';
-					if($debug_mode)
-					{
-						$sql = "SELECT user_email FROM forumv3_users WHERE username = 'ScottyT'";
-					}
-					else
+
+					if($emailaction == '')
 					{
 						$sql = 'SELECT user_email FROM forumv3_users WHERE user_type = 0 or user_type = 3';
 					}
+					else
+					{
+						$qdate = $thisyear .'-01-01 00:00:00';
+						$qedate = $thisyear .'-12-31 23:59:59';	
+						$sql = "SELECT member_firstname, member_surname, member_email, user_email, cb_membership.member_id FROM cb_membership LEFT JOIN forumv3_users ON username = member_forum_name WHERE (user_type = 0 or user_type = 3) AND NOT EXISTS (SELECT * FROM cb_membership_transactions WHERE cb_membership_transactions.member_id = cb_membership.member_id AND (DATE(`transaction_date`) BETWEEN '".$qdate."' AND '".$qedate."')) ORDER BY member_firstname, member_surname"; 
+					}
 					//run the query
 					$user_result=$mysqli->query($sql);
+					$num_rows = mysqli_num_rows($user_result);
+					$sent_to .= $num_rows.' members mailed.<br/>';
 					while ($row = mysqli_fetch_array($user_result))
 					{
-						mail($row['user_email'],$emailsubject,$msg,$mail_headers);
-						$sent_to .= $row['user_email'].'<br/>';
+						if($emailaction != '')
+						{
+							if(!$debug_mode)
+							{
+								$mf_name = $row['member_firstname'];
+							}
+							else
+							{
+								$mf_name = "Scott";
+							}
+							$msg = str_replace("[member_firstname]", $mf_name, $msg);
+						}
+						// FIX FOR PROD ***************
+						if($row['user_email'] != '')
+						{
+							if(!$debug_mode)
+							{
+								//mail($row['user_email'],$emailsubject,$msg,$mail_headers);
+							}
+							$sent_to .= $row['user_email'].'<br/>';
+						}
+					}
+					if($debug_mode)
+					{
+						mail("webmaster@canberrabrewers.com.au",$emailsubject,$msg,$mail_headers);
 					}
 				}
 			}
@@ -143,9 +177,9 @@ if($emailaction == '')
 }
 else
 {
-	$year = !empty($_GET['year']) ? $_GET['year'] : '';
 	$mailfval = "webmaster";
-	$helpmsg = "You are sending to all unpaid members for the year ". $year .", this function is for sending reminders to members who have not paid membership fees.";
+	$helpmsg = "You are sending to all unpaid members for the year ". $thisyear .", this function is for sending reminders to members who have not paid membership fees.";
+	$msg = "<h1 style='0.6rem;'>Canberra Brewers Membership renewal</h1><p>Hi [member_firstname],</p><p>Our membership database indicates that you have not yet paid your membership for this year. We're sending a reminder because we'd love to see you <a title='Canberra Brewers Membership' href='http://www.canberrabrewers.com.au/membership/'>renew your membership</a>, and we'd hate you to miss out on your continued membership benefits such as:</p><ul><li>access to the Canberra Brewers <a title='Canberra Brewers Forum' href='http://www.canberrabrewers.com.au/forum/' target='_blank'>forum</a> and <a title='Canberra Brewers Wiki' href='http://www.canberrabrewers.com.au/wiki/'>wiki</a></li><li>opportunity to participate in bulk buys of grain, yeast and other brewing equipment</li><li>access to discounts with local retailers</li><li>invitations to brew days with professional brewers</li><li>access to club <a title='Competitions' href='http://www.canberrabrewers.com.au/competitions'>competitions</a></li></ul><p>Thanks for being a member of Canberra Brewers and we hope to see you again this year.</p><h2 style='0.6rem;'><a title='Canberra Brewers Membership' href='http://www.canberrabrewers.com.au/membership/'>Renew my membership</a></h2><p>Canberra Brewers Committee</p>";
 }
 if($debug_mode) { $helpmsg .= '<br /><strong>debug mode on - do not use - contact webmaster@canberrabrewers.com.au</strong>';}
 ?>
@@ -176,9 +210,8 @@ if($debug_mode) { $helpmsg .= '<br /><strong>debug mode on - do not use - contac
 	CKEDITOR.replace( 'emailmsg' );
 </script>
 </div>
-<?php if($emailaction == '') { ?>
 <input type="submit" name="formaction" value="Send email to members" />
-<?php } ?>
+
 </form>
 <script>
 jQuery.noConflict();
@@ -197,7 +230,7 @@ jQuery(document).ready(function ($) {
 	}
 	else
 	{
-	$thisyear = date("Y");
+	
 	for ($x = $thisyear; $x >= 2017; $x--) {
     
 	$qdate = $x .'-01-01 00:00:00';
