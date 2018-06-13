@@ -122,7 +122,7 @@ if($admin_type == 'members') {
 					{
 						$qdate = $thisyear .'-01-01 00:00:00';
 						$qedate = $thisyear .'-12-31 23:59:59';	
-						$sql = "SELECT member_firstname, member_surname, member_email, user_email, cb_membership.member_id FROM cb_membership LEFT JOIN forumv3_users ON username = member_forum_name WHERE (user_type = 0 or user_type = 3) AND NOT EXISTS (SELECT * FROM cb_membership_transactions WHERE cb_membership_transactions.member_id = cb_membership.member_id AND (DATE(`transaction_date`) BETWEEN '".$qdate."' AND '".$qedate."')) ORDER BY member_firstname, member_surname"; 
+						$sql = "SELECT member_firstname, member_surname, member_email, user_email, cb_membership.member_id FROM cb_membership INNER JOIN forumv3_users ON username = member_forum_name WHERE (user_type = 0 or user_type = 3) AND NOT EXISTS (SELECT * FROM cb_membership_transactions WHERE cb_membership_transactions.member_id = cb_membership.member_id AND (DATE(`transaction_date`) BETWEEN '".$qdate."' AND '".$qedate."')) ORDER BY member_firstname, member_surname"; 
 					}
 					//run the query
 					$user_result=$mysqli->query($sql);
