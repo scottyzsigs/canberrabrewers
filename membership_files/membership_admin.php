@@ -9,6 +9,8 @@ $admin = false;
 $admin_type = '';
 $debug_mode = true;
 $thisyear = date("Y");
+$thismonth = date("F");
+$formsubject = '';
 if($debug_mode)
 {
 	error_reporting(E_ALL); 
@@ -145,7 +147,7 @@ if($admin_type == 'members') {
 						{
 							if(!$debug_mode)
 							{
-								//mail($row['user_email'],$emailsubject,$msg,$mail_headers);
+								mail($row['user_email'],$emailsubject,$msg,$mail_headers);
 							}
 							$sent_to .= $row['user_email'].'<br/>';
 						}
@@ -174,12 +176,19 @@ if($emailaction == '')
 {
 	$mailfval = "webmaster"; // bug in mail can't set to this, talk to hosting
 	$helpmsg = "You are sending to all active members, this function is for sending monthly reports or other important messages.";
+	$formsubject = 'Canberra Brewers '.$thismonth.' '.$thisyear.' Meeting Preview and other notables';
+	
 }
 else
 {
 	$mailfval = "webmaster";
 	$helpmsg = "You are sending to all unpaid members for the year ". $thisyear .", this function is for sending reminders to members who have not paid membership fees.";
-	$msg = "<h1 style='0.6rem;'>Canberra Brewers Membership renewal</h1><p>Hi [member_firstname],</p><p>Our membership database indicates that you have not yet paid your membership for this year. We're sending a reminder because we'd love to see you <a title='Canberra Brewers Membership' href='http://www.canberrabrewers.com.au/membership/'>renew your membership</a>, and we'd hate you to miss out on your continued membership benefits such as:</p><ul><li>access to the Canberra Brewers <a title='Canberra Brewers Forum' href='http://www.canberrabrewers.com.au/forum/' target='_blank'>forum</a> and <a title='Canberra Brewers Wiki' href='http://www.canberrabrewers.com.au/wiki/'>wiki</a></li><li>opportunity to participate in bulk buys of grain, yeast and other brewing equipment</li><li>access to discounts with local retailers</li><li>invitations to brew days with professional brewers</li><li>access to club <a title='Competitions' href='http://www.canberrabrewers.com.au/competitions'>competitions</a></li></ul><p>Thanks for being a member of Canberra Brewers and we hope to see you again this year.</p><h2 style='0.6rem;'><a title='Canberra Brewers Membership' href='http://www.canberrabrewers.com.au/membership/'>Renew my membership</a></h2><p>Canberra Brewers Committee</p>";
+	if($msg == '')
+	{
+		//should go in a text file
+		$msg = "<h1 style='0.6rem;'>Canberra Brewers Membership renewal reminder</h1><p>Hi [member_firstname],</p><p>Our membership database indicates that you have not yet paid your membership for this year. We're sending a reminder because we'd love to see you <a title='Canberra Brewers Membership' href='http://www.canberrabrewers.com.au/membership/'>renew your membership</a>, and we'd hate you to miss out on your continued membership benefits such as:</p><ul><li>access to the Canberra Brewers <a title='Canberra Brewers Forum' href='http://www.canberrabrewers.com.au/forum/' target='_blank'>forum</a> and <a title='Canberra Brewers Wiki' href='http://www.canberrabrewers.com.au/wiki/'>wiki</a></li><li>opportunity to participate in bulk buys of grain, yeast and other brewing equipment</li><li>access to discounts with local retailers</li><li>invitations to brew days with professional brewers</li><li>access to club <a title='Competitions' href='http://www.canberrabrewers.com.au/competitions'>competitions</a></li></ul><p>Thanks for being a member of Canberra Brewers and we hope to see you again this year.</p><h2 style='0.6rem;'><a title='Canberra Brewers Membership' href='http://www.canberrabrewers.com.au/membership/'>Renew my membership</a></h2><p>Canberra Brewers Committee</p>";
+	}
+	$formsubject = 'Canberra Brewers Membership renewal reminder - '.$thisyear;
 }
 if($debug_mode) { $helpmsg .= '<br /><strong>debug mode on - do not use - contact webmaster@canberrabrewers.com.au</strong>';}
 ?>
@@ -190,19 +199,17 @@ if($debug_mode) { $helpmsg .= '<br /><strong>debug mode on - do not use - contac
 <form method="post" novalidate="novalidate" id="emailform">
 <div class="form-row">
 	<div class="form-label"><label for="emailsubject">Email subject</label> <span class="required">*</span></div>
-	<input type="text" id="emailsubject" name="emailsubject" required />
+	<input type="text" id="emailsubject" name="emailsubject" value="<?php echo $formsubject ?>" required />
 </div>
 <div class="form-row">
 	<div class="form-label"><label for="emailfrom">Email from</label> <span class="required">*</span></div>
 	<input type="text" id="emailfrom" name="emailfrom" value="<?php echo $mailfval ?>" required />@canberrabrewers.com.au
 </div>
-<?php if($emailaction == '') { ?>
 <div class="form-row">
 	<div class="form-label"><label for="emailto">Test email to</label></div>
 	<input type="text" id="emailto" name="emailto" />
 	<p class="form-help">Leave this blank to email all members otherwise use a single email address to test</p>
 </div>
-<?php } ?>
 <div class="form-row">
 <div class="form-label"><label for="emailmsg">Email body</label> <span class="required">*</span></div>
 <textarea name="emailmsg" required><?php echo htmlentities($msg); ?></textarea>
@@ -235,7 +242,8 @@ jQuery(document).ready(function ($) {
     
 	$qdate = $x .'-01-01 00:00:00';
 	$qedate = $x .'-12-31 23:59:59';	
-	$memberlistsql = "SELECT member_firstname, member_surname, member_email, cb_membership.member_id, transaction_code, transaction_date FROM cb_membership LEFT JOIN cb_membership_transactions ON cb_membership_transactions.member_id = cb_membership.member_id WHERE (DATE(`transaction_date`) BETWEEN '".$qdate."' AND '".$qedate."') ORDER BY member_firstname, member_surname"; 
+	$members = '';
+	$memberlistsql = "SELECT member_firstname, member_surname, member_email, member_forum_name, cb_membership.member_id, transaction_code, transaction_date, username FROM cb_membership LEFT JOIN cb_membership_transactions ON cb_membership_transactions.member_id = cb_membership.member_id INNER JOIN forumv3_users ON username = member_forum_name WHERE (DATE(`transaction_date`) BETWEEN '".$qdate."' AND '".$qedate."') ORDER BY member_firstname, member_surname"; 
 	$member_result=$mysqli->query($memberlistsql);
 	$num_rows = mysqli_num_rows($member_result);
 //echo $memberlistsql;
@@ -245,19 +253,19 @@ jQuery(document).ready(function ($) {
 <?php	
 	while ($row = mysqli_fetch_array($member_result))
 	{
-		$members .= '<tr><td>'.$row['member_firstname'].' '. $row['member_surname']. '</td><td>'. $row['member_email'] .'</td><td>'. $row['transaction_date'] .'</td><td>'. $row['transaction_code'] .'</td></tr>';
+		$members .= '<tr><td>'.$row['member_firstname'].' '. $row['member_surname'].' <span title="Member ID: '.$row['member_id'].' Actual forum name: '.$row['username'].'">('.$row['member_forum_name'].')</span></td><td>'. $row['member_email'] .'</td><td>'. $row['transaction_date'] .'</td><td>'. $row['transaction_code'] .'</td></tr>';
 	}
 	$tbldata = sprintf($tbl,$members);
 	echo '<h2>'.$x.' Paid Members ('.$num_rows.')</h2>'.$tbldata;
 	$members = '';
 	
-	$memberlistsql = "SELECT member_firstname, member_surname, member_email, cb_membership.member_id FROM cb_membership LEFT JOIN forumv3_users ON username = member_forum_name WHERE (user_type = 0 or user_type = 3) AND NOT EXISTS (SELECT * FROM cb_membership_transactions WHERE cb_membership_transactions.member_id = cb_membership.member_id AND (DATE(`transaction_date`) BETWEEN '".$qdate."' AND '".$qedate."')) ORDER BY member_firstname, member_surname"; 
+	$memberlistsql = "SELECT member_firstname, member_surname, member_forum_name, member_email, cb_membership.member_id, username FROM cb_membership INNER JOIN forumv3_users ON username = member_forum_name WHERE (user_type = 0 or user_type = 3) AND NOT EXISTS (SELECT * FROM cb_membership_transactions WHERE cb_membership_transactions.member_id = cb_membership.member_id AND (DATE(`transaction_date`) BETWEEN '".$qdate."' AND '".$qedate."')) ORDER BY member_firstname, member_surname"; 
 	//echo $memberlistsql;
 	$member_result=$mysqli->query($memberlistsql);
 	$num_rows = mysqli_num_rows($member_result);
 	while ($row = mysqli_fetch_array($member_result))
 	{
-		$members .= '<tr><td>'.$row['member_firstname'].' '. $row['member_surname']. '</td><td>'. $row['member_email'] .'</td><td>Unpaid for '. $x .'</td><td></td></tr>';
+		$members .= '<tr><td>'.$row['member_firstname'].' '. $row['member_surname']. ' <span title="Member ID: '.$row['member_id'].' Actual forum name: '.$row['username'].'">('.$row['member_forum_name'].')</span></td><td>'. $row['member_email'] .'</td><td>Unpaid for '. $x .'</td><td></td></tr>';
 	}
 	$tbldata = sprintf($tbl,$members);
 	echo '<h2>'.$x.' Unpaid Members ('.$num_rows.') | <a href="membership_admin.php?action=emailform&emailaction=members&year='.$x.'">Email unpaid '.$x.' members</a></h2>'.$tbldata;

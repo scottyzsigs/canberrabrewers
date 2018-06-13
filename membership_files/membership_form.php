@@ -244,14 +244,14 @@ $a = 0;
 if($user_id == '' || $user_id == '1')
 {
 $member_sql=<<<ENDMEMBERSQL
-INSERT INTO cb_membership (member_firstname, member_surname, member_email, member_mobile, member_address, member_suburb, member_state, member_postcode, member_paid)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO cb_membership (member_firstname, member_surname, member_email, member_mobile, member_address, member_suburb, member_state, member_postcode, member_paid, member_forum_name)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?);
 ENDMEMBERSQL;
 
 // prepare and exec
 if ($memberStmt = $mysqli->prepare($member_sql)) 
 {
-$memberStmt->bind_param('ssssssssi',$_POST['first_name'],$_POST['last_name'],$_POST['email'],$_POST['night_phone_b'],$_POST['address1'],$_POST['city'],$_POST['state'],$_POST['zip'], $a);
+$memberStmt->bind_param('ssssssssi',$_POST['first_name'],$_POST['last_name'],$_POST['email'],$_POST['night_phone_b'],$_POST['address1'],$_POST['city'],$_POST['state'],$_POST['zip'],$a,$_POST['forum_name']);
 
 // execute sql
 $memberStmt->execute();
