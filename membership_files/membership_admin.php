@@ -7,7 +7,7 @@ require('/home/canber10/public_html/cbadmin/web_incs/web_db.inc');
 require('/home/canber10/public_html/cbadmin/web_incs/forum_auth.php');
 $admin = false;
 $admin_type = '';
-$debug_mode = true;
+$debug_mode = false;
 $thisyear = date("Y");
 $thismonth = date("F");
 $formsubject = '';
@@ -122,7 +122,7 @@ if($admin_type == 'members') {
 					{
 						$qdate = $thisyear .'-01-01 00:00:00';
 						$qedate = $thisyear .'-12-31 23:59:59';	
-						$sql = "SELECT member_firstname, member_surname, member_email, user_email, cb_membership.member_id FROM cb_membership INNER JOIN forumv3_users ON username = member_forum_name WHERE (user_type = 0 or user_type = 3) AND NOT EXISTS (SELECT * FROM cb_membership_transactions WHERE cb_membership_transactions.member_id = cb_membership.member_id AND (DATE(`transaction_date`) BETWEEN '".$qdate."' AND '".$qedate."')) ORDER BY member_firstname, member_surname"; 
+						$sql = "SELECT member_firstname, member_surname, member_email, user_email, cb_membership.member_id FROM cb_membership LEFT JOIN forumv3_users ON username = member_forum_name WHERE (user_type = 0 or user_type = 3) AND NOT EXISTS (SELECT * FROM cb_membership_transactions WHERE cb_membership_transactions.member_id = cb_membership.member_id AND (DATE(`transaction_date`) BETWEEN '".$qdate."' AND '".$qedate."')) ORDER BY member_firstname, member_surname"; 
 					}
 					//run the query
 					$user_result=$mysqli->query($sql);
@@ -142,7 +142,6 @@ if($admin_type == 'members') {
 							}
 							$msg = str_replace("[member_firstname]", $mf_name, $msg);
 						}
-						// FIX FOR PROD ***************
 						if($row['user_email'] != '')
 						{
 							if(!$debug_mode)
@@ -186,7 +185,7 @@ else
 	if($msg == '')
 	{
 		//should go in a text file
-		$msg = "<h1 style='0.6rem;'>Canberra Brewers Membership renewal reminder</h1><p>Hi [member_firstname],</p><p>Our membership database indicates that you have not yet paid your membership for this year. We're sending a reminder because we'd love to see you <a title='Canberra Brewers Membership' href='http://www.canberrabrewers.com.au/membership/'>renew your membership</a>, and we'd hate you to miss out on your continued membership benefits such as:</p><ul><li>access to the Canberra Brewers <a title='Canberra Brewers Forum' href='http://www.canberrabrewers.com.au/forum/' target='_blank'>forum</a> and <a title='Canberra Brewers Wiki' href='http://www.canberrabrewers.com.au/wiki/'>wiki</a></li><li>opportunity to participate in bulk buys of grain, yeast and other brewing equipment</li><li>access to discounts with local retailers</li><li>invitations to brew days with professional brewers</li><li>access to club <a title='Competitions' href='http://www.canberrabrewers.com.au/competitions'>competitions</a></li></ul><p>Thanks for being a member of Canberra Brewers and we hope to see you again this year.</p><h2 style='0.6rem;'><a title='Canberra Brewers Membership' href='http://www.canberrabrewers.com.au/membership/'>Renew my membership</a></h2><p>Canberra Brewers Committee</p>";
+		$msg = "<h1 style='0.6rem;'>Canberra Brewers Membership renewal reminder</h1><p>Hi [member_firstname],</p><p>Our membership database indicates that you have not yet paid your membership for this year. We're sending a reminder because we'd love to see you <a title='Canberra Brewers Membership' href='http://www.canberrabrewers.com.au/membership/'>renew your membership</a>, and we'd hate you to miss out on your continued membership benefits such as:</p><ul><li>access to the Canberra Brewers <a title='Canberra Brewers Forum' href='http://www.canberrabrewers.com.au/forum/' target='_blank'>forum</a> and <a title='Canberra Brewers Wiki' href='http://www.canberrabrewers.com.au/wiki/'>wiki</a></li><li>opportunity to participate in bulk buys of grain, yeast and other brewing equipment</li><li>access to discounts and benefits from club supporters and sponsors</li><li>invitations to brew days with professional brewers</li><li>access to club <a title='Competitions' href='http://www.canberrabrewers.com.au/competitions'>competitions</a></li><li>Access to subsidised events including Oktoberfest and Christmas Party</ul><p>Thanks for being a member of Canberra Brewers and we hope to see you again this year.</p><h2 style='0.6rem;'><a title='Canberra Brewers Membership' href='http://www.canberrabrewers.com.au/membership/'>Renew my membership</a></h2><p>Canberra Brewers Committee</p>";
 	}
 	$formsubject = 'Canberra Brewers Membership renewal reminder - '.$thisyear;
 }

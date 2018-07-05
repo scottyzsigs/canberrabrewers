@@ -107,7 +107,7 @@ setcookie($cookie_name, $cookie_value, time() + (86400 * 1), "/"); // 86400 = 1 
 <p>Welcome to the Canberra Brewers Online Membership system Version 1.1 Beta.</p>
 <h4>Please note:</h4>
 <ul>
-<li>This system is in beta, if you experience any issues registering or paying, please <strong>send an email to webmaster@canberrabrewers.com.au</strong>.</li>
+<li>If you experience any issues registering or paying, please <strong>send an email to webmaster@canberrabrewers.com.au</strong>.</li>
 <li>If you are a returning member who is not current and can't access the forum, please <strong>send an email to webmaster@canberrabrewers.com.au</strong> and we'll reactivate you temporarily so you can log in.</li>
 <li>You can change any of your existing details if they are incorrect <strong>except forum name</strong>. If you want to change that send an email to webmaster@canberrabrewers.com.au.</li>
 </ul>
@@ -251,7 +251,7 @@ ENDMEMBERSQL;
 // prepare and exec
 if ($memberStmt = $mysqli->prepare($member_sql)) 
 {
-$memberStmt->bind_param('ssssssssi',$_POST['first_name'],$_POST['last_name'],$_POST['email'],$_POST['night_phone_b'],$_POST['address1'],$_POST['city'],$_POST['state'],$_POST['zip'],$a,$_POST['forum_name']);
+$memberStmt->bind_param('ssssssssis',$_POST['first_name'],$_POST['last_name'],$_POST['email'],$_POST['night_phone_b'],$_POST['address1'],$_POST['city'],$_POST['state'],$_POST['zip'],$a,$_POST['forum_name']);
 
 // execute sql
 $memberStmt->execute();
