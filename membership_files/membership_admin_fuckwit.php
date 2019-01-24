@@ -84,7 +84,7 @@ if($admin_type == 'members') {
 	$action = !empty($_GET['action']) ? $_GET['action'] : ''; // was action sent?
 	$emailaction = !empty($_GET['emailaction']) ? $_GET['emailaction'] : ''; // was action sent?
 	$formaction = !empty($_POST['formaction']) ? $_POST['formaction'] : ''; // was form action sent?
-	if($emailaction == 'disablemembers') 
+	if($emailaction == 'disablemembers' || $emailaction == 'youfuckenidiot') 
 	{
 		// reset the formaction to trigger the loop so we don't need to duplicate that code
 		$formaction = 'Send email to members';
@@ -127,10 +127,26 @@ if($admin_type == 'members') {
 					}
 					else
 					{
-						// SET THISYEAR FROM QUERYSTRING, BUG, ENABLE QUERY EXEC WHEN DONE - FUCKWIT
+					if($emailaction == 'youfuckenidiot')
+					{
+						//fuckwit broke it by not passing year, fuckwit!!!!!
+						echo "YOUFUCKENIDIOT SQL";
+						$qdate = '2018-01-01 00:00:00';
+						$qedate = '2018-12-31 23:59:59';
+						$sql = "SELECT member_firstname, member_surname, member_email, member_forum_name, cb_membership.member_id, transaction_code, transaction_date, username, user_email, user_id FROM cb_membership LEFT JOIN cb_membership_transactions ON cb_membership_transactions.member_id = cb_membership.member_id INNER JOIN forumv3_users ON username = member_forum_name WHERE (DATE(`transaction_date`) BETWEEN '".$qdate."' AND '".$qedate."') ORDER BY member_firstname, member_surname"; 
+					}
+					else
+					{
+						
+						// ************************************************
+						// ************************************************
+						// ************************************************
+						// ************************************************
+						// FIX THIS, PASS THE YEAR IN QUERYSTRING, RE ENABLE MEMBERS
 						$qdate = $thisyear .'-01-01 00:00:00';
 						$qedate = $thisyear .'-12-31 23:59:59';	
 						$sql = "SELECT member_id, member_firstname, member_surname, member_email, user_email, cb_membership.member_id, user_id FROM cb_membership LEFT JOIN forumv3_users ON username = member_forum_name WHERE (user_type = 0 or user_type = 3) AND NOT EXISTS (SELECT * FROM cb_membership_transactions WHERE cb_membership_transactions.member_id = cb_membership.member_id AND (DATE(`transaction_date`) BETWEEN '".$qdate."' AND '".$qedate."')) ORDER BY member_firstname, member_surname"; 
+					}
 					}
 					//run the query
 					$user_result=$mysqli->query($sql);
@@ -152,6 +168,7 @@ if($admin_type == 'members') {
 						}
 						if($row['user_email'] != '')
 						{
+							echo "got record";
 							if(!$debug_mode)
 							{
 								if($emailaction == "disablemembers")
@@ -172,8 +189,27 @@ if($admin_type == 'members') {
 								}
 								else
 								{
+									if($emailaction == "youfuckenidiot")
+									{
+										echo "YOUFUCKENIDIOT LOOP";
+										$sql = "UPDATE forumv3_users SET user_type=0, user_inactive_reason=0 WHERE user_id=?";
+										if ($msql = $mysqli->prepare($sql)) 
+										{
+											$msql->bind_param('i',$row['user_id']);
+											$msql->execute();
+										}
+										$sql = "UPDATE cb_membership SET member_disabled_year=0 WHERE member_id=?";
+										if ($msql = $mysqli->prepare($sql)) 
+										{
+											$msql->bind_param('i',$row['member_id']);
+											$msql->execute();
+										}
+										echo "Defuckwitted ".$row['user_email']." forum id: ".$row['user_id']." name".$row['member_forum_name'].'<br/>';
+									}
+									else{
 									//echo $msg;
 									mail($row['user_email'],$emailsubject,$msg,$mail_headers);
+									}
 								}
 							}
 							if($emailaction != "disablemembers")
